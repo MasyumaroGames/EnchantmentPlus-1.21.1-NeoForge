@@ -57,6 +57,11 @@ neoForge {
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'mixin.env.remapRefMap', 'true'
+            systemProperty 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
+            // 強制的にMixinファイルを読み込ませる引数
+            jvmArgument "-Dmixin.config=enchant.mixins.json"
         }
 
         server {
@@ -103,7 +108,7 @@ neoForge {
         // define mod <-> source bindings
         // these are used to tell the game which sources are for which mod
         // multi mod projects should define one per mod
-        "${mod_id}" {
+        "enchant" {
             sourceSet(sourceSets.main)
         }
     }
@@ -183,10 +188,24 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {
         downloadSources = true
         downloadJavadoc = true
     }
+}
+
+tasks.withType(ProcessResources).configureEach {
+    // 重複したファイルが見つかった場合、リソースフォルダ側を優先して含める設定
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
